@@ -152,15 +152,22 @@ client.on("interactionCreate", async (interaction) => {
 
     if (interaction.commandName === "setupserver") {
       const confirmed = interaction.options.getBoolean("confirm", true);
+      const me = await interaction.guild.members.fetchMe();
+      const missingBotPermissions = [
+        ["ManageChannels", PermissionFlagsBits.ManageChannels],
+        ["ViewChannel", PermissionFlagsBits.ViewChannel]
+      ]
+        .filter(([, flag]) => !me.permissions.has(flag))
+        .map(([name]) => name);
 
       if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
         await interaction.reply({ content: "You need Manage Server permission.", ephemeral: true });
         return;
       }
 
-      if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+      if (missingBotPermissions.length > 0) {
         await interaction.reply({
-          content: "I need Manage Channels permission before I can set up channels.",
+          content: `I am missing these permissions: ${missingBotPermissions.join(", ")}.`,
           ephemeral: true
         });
         return;
@@ -175,12 +182,17 @@ client.on("interactionCreate", async (interaction) => {
       }
 
       await interaction.deferReply({ ephemeral: true });
-      const result = await setupServerChannels(interaction.guild);
-      await interaction.editReply([
-        `Server setup finished.`,
-        `Created: ${result.created.length ? result.created.join(", ") : "nothing new"}`,
-        `Skipped existing: ${result.skipped.length ? result.skipped.join(", ") : "none"}`
-      ].join("\n"));
+      try {
+        const result = await setupServerChannels(interaction.guild);
+        await interaction.editReply([
+          `Server setup finished.`,
+          `Created: ${result.created.length ? result.created.join(", ") : "nothing new"}`,
+          `Skipped existing: ${result.skipped.length ? result.skipped.join(", ") : "none"}`
+        ].join("\n"));
+      } catch (error) {
+        console.error("setupserver failed:", error);
+        await interaction.editReply(`Setup failed: ${error?.message || "unknown error"}`);
+      }
       return;
     }
 

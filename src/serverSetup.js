@@ -2,7 +2,7 @@ const { ChannelType, PermissionFlagsBits } = require("discord.js");
 
 const channelLayout = [
   {
-    category: "🔰 START HERE",
+    category: "\u{1F530} START HERE",
     channels: [
       { name: "welcome", type: ChannelType.GuildText },
       { name: "rules", type: ChannelType.GuildText },
@@ -11,7 +11,7 @@ const channelLayout = [
     ]
   },
   {
-    category: "🧠 COMMUNITY",
+    category: "\u{1F9E0} COMMUNITY",
     channels: [
       { name: "general", type: ChannelType.GuildText },
       { name: "introductions", type: ChannelType.GuildText },
@@ -20,7 +20,7 @@ const channelLayout = [
     ]
   },
   {
-    category: "💼 BUSINESS",
+    category: "\u{1F4BC} BUSINESS",
     channels: [
       { name: "agency-talk", type: ChannelType.GuildText },
       { name: "saas", type: ChannelType.GuildText },
@@ -29,7 +29,7 @@ const channelLayout = [
     ]
   },
   {
-    category: "🧲 NETWORKING",
+    category: "\u{1F9F2} NETWORKING",
     channels: [
       { name: "connect", type: ChannelType.GuildText },
       { name: "collabs", type: ChannelType.GuildText },
@@ -38,7 +38,7 @@ const channelLayout = [
     ]
   },
   {
-    category: "🛠 RESOURCES",
+    category: "\u{1F6E0} RESOURCES",
     channels: [
       { name: "tools", type: ChannelType.GuildText },
       { name: "guides", type: ChannelType.GuildText },
@@ -46,7 +46,7 @@ const channelLayout = [
     ]
   },
   {
-    category: "🎯 OPERATIONS",
+    category: "\u{1F3AF} OPERATIONS",
     channels: [
       { name: "systems", type: ChannelType.GuildText },
       { name: "funnels", type: ChannelType.GuildText },
@@ -54,7 +54,7 @@ const channelLayout = [
     ]
   },
   {
-    category: "🔒 PRIVATE",
+    category: "\u{1F512} PRIVATE",
     private: true,
     channels: [
       { name: "inner-circle", type: ChannelType.GuildText },
@@ -62,7 +62,7 @@ const channelLayout = [
     ]
   },
   {
-    category: "⚙️ SUPPORT",
+    category: "\u2699\uFE0F SUPPORT",
     channels: [
       { name: "support", type: ChannelType.GuildText },
       { name: "faq", type: ChannelType.GuildText }
