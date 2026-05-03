@@ -14,11 +14,18 @@ if (!token || !clientId || !guildId) {
 const rest = new REST({ version: "10" }).setToken(token);
 
 async function main() {
-  await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
+  if (guildId) {
+    await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
+      body: commands
+    });
+    console.log(`Registered ${commands.length} guild slash commands for guild ${guildId}`);
+  }
+
+  await rest.put(Routes.applicationCommands(clientId), {
     body: commands
   });
 
-  console.log(`Registered ${commands.length} slash commands for guild ${guildId}`);
+  console.log(`Registered ${commands.length} global slash commands`);
 }
 
 main().catch((error) => {

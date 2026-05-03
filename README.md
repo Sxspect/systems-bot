@@ -61,6 +61,5 @@ If `/setupserver` says the bot needs Manage Channels permission, give the bot ro
    - `DISCORD_TOKEN`
    - `CLIENT_ID`
    - `GUILD_ID`
-   - `REGISTER_COMMANDS_ON_START=true`
 
 Do not commit your real token. Keep it only in `.env` locally or Render environment variables.

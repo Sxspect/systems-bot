@@ -15,7 +15,6 @@ const { setupServerChannels } = require("./serverSetup");
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
-const shouldRegisterCommands = process.env.REGISTER_COMMANDS_ON_START === "true";
 const port = Number(process.env.PORT || 3000);
 
 if (!token) {
@@ -56,15 +55,32 @@ async function registerGuildCommands() {
   console.log(`Registered ${commands.length} slash commands for guild ${guildId}`);
 }
 
+async function registerGlobalCommands() {
+  if (!clientId) {
+    console.warn("Skipping global slash command registration. CLIENT_ID is required.");
+    return;
+  }
+
+  const rest = new REST({ version: "10" }).setToken(token);
+  await rest.put(Routes.applicationCommands(clientId), {
+    body: commands
+  });
+  console.log(`Registered ${commands.length} global slash commands`);
+}
+
 client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
-  if (shouldRegisterCommands) {
-    try {
-      await registerGuildCommands();
-    } catch (error) {
-      console.error("Failed to register slash commands:", error);
-    }
+  try {
+    await registerGuildCommands();
+  } catch (error) {
+    console.error("Failed to register guild slash commands:", error);
+  }
+
+  try {
+    await registerGlobalCommands();
+  } catch (error) {
+    console.error("Failed to register global slash commands:", error);
   }
 });
 
