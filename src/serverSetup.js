@@ -2,41 +2,70 @@ const { ChannelType, PermissionFlagsBits } = require("discord.js");
 
 const channelLayout = [
   {
-    category: "START HERE",
+    category: "🔰 START HERE",
     channels: [
-      { name: "rules", type: ChannelType.GuildText, topic: "Server rules and expectations." },
-      { name: "announcements", type: ChannelType.GuildText, topic: "Important server updates." },
-      { name: "welcome", type: ChannelType.GuildText, topic: "New member welcomes." }
+      { name: "welcome", type: ChannelType.GuildText },
+      { name: "rules", type: ChannelType.GuildText },
+      { name: "announcements", type: ChannelType.GuildText },
+      { name: "get-access", type: ChannelType.GuildText }
     ]
   },
   {
-    category: "COMMUNITY",
+    category: "🧠 COMMUNITY",
     channels: [
-      { name: "general", type: ChannelType.GuildText, topic: "Main community chat." },
-      { name: "media", type: ChannelType.GuildText, topic: "Share images, clips, and links." },
-      { name: "commands", type: ChannelType.GuildText, topic: "Bot commands and testing." }
+      { name: "general", type: ChannelType.GuildText },
+      { name: "introductions", type: ChannelType.GuildText },
+      { name: "wins", type: ChannelType.GuildText },
+      { name: "value-drops", type: ChannelType.GuildText }
     ]
   },
   {
-    category: "SUPPORT",
+    category: "💼 BUSINESS",
     channels: [
-      { name: "support", type: ChannelType.GuildText, topic: "Ask for help here." },
-      { name: "suggestions", type: ChannelType.GuildText, topic: "Share ideas for the server." }
+      { name: "agency-talk", type: ChannelType.GuildText },
+      { name: "saas", type: ChannelType.GuildText },
+      { name: "ai-automation", type: ChannelType.GuildText },
+      { name: "growth", type: ChannelType.GuildText }
     ]
   },
   {
-    category: "STAFF",
+    category: "🧲 NETWORKING",
+    channels: [
+      { name: "connect", type: ChannelType.GuildText },
+      { name: "collabs", type: ChannelType.GuildText },
+      { name: "hiring", type: ChannelType.GuildText },
+      { name: "offers", type: ChannelType.GuildText }
+    ]
+  },
+  {
+    category: "🛠 RESOURCES",
+    channels: [
+      { name: "tools", type: ChannelType.GuildText },
+      { name: "guides", type: ChannelType.GuildText },
+      { name: "templates", type: ChannelType.GuildText }
+    ]
+  },
+  {
+    category: "🎯 OPERATIONS",
+    channels: [
+      { name: "systems", type: ChannelType.GuildText },
+      { name: "funnels", type: ChannelType.GuildText },
+      { name: "client-delivery", type: ChannelType.GuildText }
+    ]
+  },
+  {
+    category: "🔒 PRIVATE",
     private: true,
     channels: [
-      { name: "staff-chat", type: ChannelType.GuildText, topic: "Private staff discussion." },
-      { name: "mod-logs", type: ChannelType.GuildText, topic: "Moderator notes and logs." }
+      { name: "inner-circle", type: ChannelType.GuildText },
+      { name: "high-ticket", type: ChannelType.GuildText }
     ]
   },
   {
-    category: "VOICE",
+    category: "⚙️ SUPPORT",
     channels: [
-      { name: "General Voice", type: ChannelType.GuildVoice },
-      { name: "Staff Voice", type: ChannelType.GuildVoice, private: true }
+      { name: "support", type: ChannelType.GuildText },
+      { name: "faq", type: ChannelType.GuildText }
     ]
   }
 ];
