@@ -48,6 +48,17 @@ const commandBuilders = [
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
 
   new SlashCommandBuilder()
+    .setName("setupserver")
+    .setDescription("Create the default server channel layout.")
+    .addBooleanOption((option) =>
+      option
+        .setName("confirm")
+        .setDescription("Set this to true to create missing categories and channels.")
+        .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
     .setName("help")
     .setDescription("Show available commands.")
 ];

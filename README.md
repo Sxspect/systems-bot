@@ -9,6 +9,7 @@ A small Discord bot ready to deploy on Render.
 - `/userinfo` shows user info.
 - `/say` lets moderators send a bot message.
 - `/clear` bulk deletes recent messages.
+- `/setupserver` creates the default server channel layout.
 - `/help` lists commands.
 - `/health` keeps Render health checks happy.
 
@@ -46,7 +47,7 @@ Replace `YOUR_CLIENT_ID` with your Application ID:
 https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=274877975552&integration_type=0&scope=bot+applications.commands
 ```
 
-The invite includes the bot scope and slash command scope.
+If `/setupserver` says the bot needs Manage Channels permission, give the bot role Manage Channels in Discord or reinvite it with the needed permissions.
 
 ## Render Deployment
 

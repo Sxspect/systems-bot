@@ -10,6 +10,7 @@ const {
   Routes
 } = require("discord.js");
 const { commands } = require("./commands");
+const { setupServerChannels } = require("./serverSetup");
 
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
@@ -149,6 +150,40 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
 
+    if (interaction.commandName === "setupserver") {
+      const confirmed = interaction.options.getBoolean("confirm", true);
+
+      if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
+        await interaction.reply({ content: "You need Manage Server permission.", ephemeral: true });
+        return;
+      }
+
+      if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+        await interaction.reply({
+          content: "I need Manage Channels permission before I can set up channels.",
+          ephemeral: true
+        });
+        return;
+      }
+
+      if (!confirmed) {
+        await interaction.reply({
+          content: "Run `/setupserver confirm:true` when you are ready.",
+          ephemeral: true
+        });
+        return;
+      }
+
+      await interaction.deferReply({ ephemeral: true });
+      const result = await setupServerChannels(interaction.guild);
+      await interaction.editReply([
+        `Server setup finished.`,
+        `Created: ${result.created.length ? result.created.join(", ") : "nothing new"}`,
+        `Skipped existing: ${result.skipped.length ? result.skipped.join(", ") : "none"}`
+      ].join("\n"));
+      return;
+    }
+
     if (interaction.commandName === "help") {
       await interaction.reply({
         content: [
@@ -157,6 +192,7 @@ client.on("interactionCreate", async (interaction) => {
           "`/userinfo` - Show user info.",
           "`/say` - Send a bot message. Requires Manage Messages.",
           "`/clear` - Delete recent messages. Requires Manage Messages.",
+          "`/setupserver` - Create the default server channel layout. Requires Manage Server.",
           "`/help` - Show this list."
         ].join("\n"),
         ephemeral: true
