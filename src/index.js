@@ -42,6 +42,27 @@ const defaultWelcomeSettings = {
 };
 const rulesChannelName = process.env.RULES_CHANNEL_NAME || "rules";
 const rulesBannerPath = process.env.RULES_BANNER_PATH || path.join(process.cwd(), "assets", "rules-banner.png");
+const announcementsChannelName = process.env.ANNOUNCEMENTS_CHANNEL_NAME || "announcements";
+const firstAnnouncementMessage = [
+  "🚨 **WEALTH OPERATORS IS OFFICIALLY LIVE** 🚨",
+  "",
+  "The wait is over.",
+  "",
+  "Welcome to **Wealth Operators** — the community for people who want to learn AI automation, build online income skills, network with ambitious people, and actually take action.",
+  "",
+  "Inside the server you'll find:",
+  "💻 AI automation discussions",
+  "📈 Making money with AI",
+  "🛠 Tools, workflows & strategies",
+  "🤝 Networking with operators",
+  "🔥 Showcasing projects & wins",
+  "📚 Learning resources & guidance",
+  "",
+  "This is just the beginning.",
+  "If you're serious about leveling up and building something real, you're in the right place.",
+  "",
+  "Join the movement. Become an operator. ⚡"
+].join("\n");
 const ruleSections = [
   {
     name: "01  Discord Standards",
@@ -397,6 +418,42 @@ client.on("interactionCreate", async (interaction) => {
       }
     }
 
+    if (interaction.commandName === "announcement") {
+      if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
+        await interaction.reply({ content: "You need Manage Server permission.", ephemeral: true });
+        return;
+      }
+
+      const subcommand = interaction.options.getSubcommand();
+
+      if (subcommand === "post") {
+        const channel =
+          interaction.options.getChannel("channel") ||
+          findTextChannel(interaction.guild, announcementsChannelName);
+
+        if (!channel) {
+          await interaction.reply({
+            content: `I could not find #${announcementsChannelName}. Pick a channel with /announcement post channel:#channel.`,
+            ephemeral: true
+          });
+          return;
+        }
+
+        await interaction.deferReply({ ephemeral: true });
+        await channel.send(firstAnnouncementMessage);
+        await interaction.editReply(`Announcement posted in ${channel}.`);
+        return;
+      }
+
+      if (subcommand === "preview") {
+        await interaction.reply({
+          content: firstAnnouncementMessage,
+          ephemeral: true
+        });
+        return;
+      }
+    }
+
     if (interaction.commandName === "help") {
       await interaction.reply({
         content: [
@@ -411,6 +468,8 @@ client.on("interactionCreate", async (interaction) => {
           "`/welcome off` - Turn welcome messages off. Requires Manage Server.",
           "`/rules post` - Post the server rules banner and message. Requires Manage Server.",
           "`/rules preview` - Preview the server rules message.",
+          "`/announcement post` - Post the launch announcement. Requires Manage Server.",
+          "`/announcement preview` - Preview the launch announcement.",
           "`/help` - Show this list."
         ].join("\n"),
         ephemeral: true

@@ -15,6 +15,8 @@ A small Discord bot ready to deploy on Render.
 - `/welcome off` disables automatic welcome messages.
 - `/rules post` posts the server rules banner and rules text.
 - `/rules preview` previews the server rules privately.
+- `/announcement post` posts the launch announcement to `#announcements`.
+- `/announcement preview` previews the launch announcement privately.
 - Tracks new Discord members in a Notion database when Notion env vars are configured.
 - `/help` lists commands.
 - `/health` keeps Render health checks happy.
@@ -32,6 +34,7 @@ A small Discord bot ready to deploy on Render.
    - `WELCOME_BANNER_PATH`: fallback welcome banner image.
    - `RULES_CHANNEL_NAME`: fallback rules channel name.
    - `RULES_BANNER_PATH`: fallback rules banner image.
+   - `ANNOUNCEMENTS_CHANNEL_NAME`: fallback announcements channel name.
    - `NOTION_TOKEN`: your Notion integration secret.
    - `NOTION_MEMBERS_DATABASE_ID`: the database where joined members are tracked.
 4. Install dependencies:
@@ -105,6 +108,22 @@ By default it posts to `#rules`. You can choose another channel:
 
 The bot sends the banner first, then the rules text underneath.
 
+## Launch Announcement
+
+The default launch announcement was copied from `C:\Users\strul\Desktop\first.txt`.
+
+Post it in Discord:
+
+```text
+/announcement post
+```
+
+By default it posts to `#announcements`. You can choose another channel:
+
+```text
+/announcement post channel:#announcements
+```
+
 ## Notion Member Tracking
 
 The bot can track every new Discord member in Notion.
@@ -164,6 +183,7 @@ After redeploy, every new Discord join creates or updates a row in that Notion d
    - `WELCOME_BANNER_PATH`
    - `RULES_CHANNEL_NAME`
    - `RULES_BANNER_PATH`
+   - `ANNOUNCEMENTS_CHANNEL_NAME`
    - `NOTION_TOKEN`
    - `NOTION_MEMBERS_DATABASE_ID`
 

@@ -116,6 +116,28 @@ const commandBuilders = [
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   new SlashCommandBuilder()
+    .setName("announcement")
+    .setDescription("Post or preview the launch announcement.")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("post")
+        .setDescription("Post the launch announcement.")
+        .addChannelOption((option) =>
+          option
+            .setName("channel")
+            .setDescription("Where the announcement should be posted.")
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(false)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("preview")
+        .setDescription("Preview the launch announcement privately.")
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
     .setName("help")
     .setDescription("Show available commands.")
 ];
