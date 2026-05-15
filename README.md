@@ -13,6 +13,7 @@ A small Discord bot ready to deploy on Render.
 - `/welcome set` configures automatic welcome messages.
 - `/welcome preview` previews the current welcome message.
 - `/welcome off` disables automatic welcome messages.
+- Tracks new Discord members in a Notion database when Notion env vars are configured.
 - `/help` lists commands.
 - `/health` keeps Render health checks happy.
 
@@ -27,6 +28,8 @@ A small Discord bot ready to deploy on Render.
    - `WELCOME_CHANNEL_NAME`: fallback welcome channel name.
    - `WELCOME_MESSAGE`: fallback welcome message.
    - `WELCOME_BANNER_PATH`: fallback welcome banner image.
+   - `NOTION_TOKEN`: your Notion integration secret.
+   - `NOTION_MEMBERS_DATABASE_ID`: the database where joined members are tracked.
 4. Install dependencies:
 
 ```bash
@@ -80,6 +83,48 @@ The custom welcome settings are saved to `data/welcome-settings.json`. On Render
 
 The default welcome message now welcomes members to Wealth Operators 2.0 and attaches `assets/welcome-banner.png`.
 
+## Notion Member Tracking
+
+The bot can track every new Discord member in Notion.
+
+The database columns are:
+
+- `Name`
+- `User ID`
+- `Username`
+- `Display Name`
+- `Server`
+- `Server ID`
+- `Status`
+- `Bot`
+- `Joined At`
+- `Account Created`
+- `Avatar URL`
+
+Create a Notion integration, give it insert/read/update content capabilities, then share the parent Notion page with that integration.
+
+Add these locally or in Render:
+
+```text
+NOTION_TOKEN=secret_your-notion-integration-token
+NOTION_PARENT_PAGE_ID=your-notion-parent-page-id
+NOTION_MEMBERS_DATABASE_TITLE=Discord Members
+```
+
+Create the database once:
+
+```bash
+npm run notion:create-database
+```
+
+Copy the printed database ID into Render:
+
+```text
+NOTION_MEMBERS_DATABASE_ID=created-notion-members-database-id
+```
+
+After redeploy, every new Discord join creates or updates a row in that Notion database. If the same user rejoins the same server, the bot updates their row and sets `Status` to `Rejoined`.
+
 ## Render Deployment
 
 1. Push this repo to GitHub.
@@ -95,5 +140,7 @@ The default welcome message now welcomes members to Wealth Operators 2.0 and att
    - `WELCOME_CHANNEL_NAME`
    - `WELCOME_MESSAGE`
    - `WELCOME_BANNER_PATH`
+   - `NOTION_TOKEN`
+   - `NOTION_MEMBERS_DATABASE_ID`
 
 Do not commit your real token. Keep it only in `.env` locally or Render environment variables.

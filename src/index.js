@@ -13,6 +13,7 @@ const {
   ChannelType
 } = require("discord.js");
 const { commands } = require("./commands");
+const { upsertNotionMember } = require("./notionMembers");
 const { setupServerChannels } = require("./serverSetup");
 
 const token = process.env.DISCORD_TOKEN;
@@ -422,6 +423,16 @@ function findWelcomeChannel(guild, settings = welcomeSettings) {
 
 client.on("guildMemberAdd", async (member) => {
   try {
+    try {
+      const notionResult = await upsertNotionMember(member);
+
+      if (!notionResult.skipped) {
+        console.log(`Notion member ${notionResult.action}: ${member.user.tag}`);
+      }
+    } catch (error) {
+      console.error(`Failed to track member in Notion for ${member.user.tag}:`, error);
+    }
+
     if (!welcomeSettings.enabled) {
       return;
     }

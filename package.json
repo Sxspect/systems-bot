@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "register": "node scripts/register-commands.js",
-    "check": "node --check src/index.js && node --check src/commands.js && node --check src/serverSetup.js && node --check scripts/register-commands.js"
+    "notion:create-database": "node scripts/create-notion-member-database.js",
+    "check": "node --check src/index.js && node --check src/commands.js && node --check src/serverSetup.js && node --check src/notionMembers.js && node --check scripts/register-commands.js && node --check scripts/create-notion-member-database.js"
   },
   "dependencies": {
     "discord.js": "^14.18.0",
