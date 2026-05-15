@@ -42,34 +42,39 @@ const defaultWelcomeSettings = {
 };
 const rulesChannelName = process.env.RULES_CHANNEL_NAME || "rules";
 const rulesBannerPath = process.env.RULES_BANNER_PATH || path.join(process.cwd(), "assets", "rules-banner.png");
-const rulesMessage = [
-  "> **Extra Notes**",
-  "(i) Follow Discord's TOS at all times.",
-  "(ii) Follow Discord's Guidelines.",
-  "(iii) No talks of self harm or suicide.",
-  "",
-  "> **Be Respectful**",
-  "Bullying, harassment, homophobia, racism, or any form of discrimination will not be tolerated. Keep the community friendly and inclusive for all.",
-  "",
-  "> **Do Not Spam**",
-  "Spamming is not allowed. While we allow some leniency, excessive spamming will result in a warning and potential punishment.",
-  "",
-  "> **Link Filter**",
-  "Stay within our community. Do not attempt to bypass our link or word filters or advertise other Discord servers.",
-  "",
-  "> **Exposing Information**",
-  "Do not share personal information without consent.",
-  "",
-  "> **Keep It Appropriate**",
-  "Usernames, nicknames, and profile pictures must be appropriate and non-offensive. Inappropriate content will result in a warning or ban.",
-  "",
-  "> **No Religion or Politics**",
-  "To keep the community respectful and inclusive, avoid discussions on religion or politics. These topics can be divisive and are not allowed here.",
-  "",
-  "```",
-  "There are no excuses for not following these rules.",
-  "```"
-].join("\n");
+const ruleSections = [
+  {
+    name: "01  Discord Standards",
+    value: [
+      "Follow Discord's Terms of Service and Community Guidelines.",
+      "No talk of self-harm, suicide, or anything that puts members at risk."
+    ].join("\n")
+  },
+  {
+    name: "02  Respect Everyone",
+    value: "Bullying, harassment, racism, homophobia, or discrimination of any kind is not tolerated."
+  },
+  {
+    name: "03  No Spam",
+    value: "Avoid flooding chats, repeated messages, low-effort posts, or disruptive behavior."
+  },
+  {
+    name: "04  Link Filter",
+    value: "Do not bypass filters, advertise other servers, or push links that do not belong here."
+  },
+  {
+    name: "05  Privacy",
+    value: "Do not expose, leak, or share anyone's personal information without clear consent."
+  },
+  {
+    name: "06  Keep It Appropriate",
+    value: "Usernames, nicknames, profile pictures, and content must stay clean and non-offensive."
+  },
+  {
+    name: "07  No Religion Or Politics",
+    value: "Keep the community focused and constructive. Divisive religious or political debates are not allowed."
+  }
+];
 
 if (!token) {
   throw new Error("Missing DISCORD_TOKEN environment variable.");
@@ -384,7 +389,7 @@ client.on("interactionCreate", async (interaction) => {
 
       if (subcommand === "preview") {
         await interaction.reply({
-          content: rulesMessage,
+          embeds: [buildRulesEmbed()],
           files: getRulesFiles(),
           ephemeral: true
         });
@@ -461,6 +466,31 @@ function getRulesFiles() {
   return fs.existsSync(rulesBannerPath) ? [rulesBannerPath] : [];
 }
 
+function buildRulesEmbed() {
+  const embed = new EmbedBuilder()
+    .setTitle("Wealth Operators 2.0 Server Rules")
+    .setDescription([
+      "Read these before posting. The goal is simple: keep the server useful, focused, and respectful.",
+      "",
+      "**Rule Grid**"
+    ].join("\n"))
+    .setColor(0xd4af37)
+    .addFields(ruleSections.map((rule) => ({
+      name: rule.name,
+      value: rule.value,
+      inline: true
+    })))
+    .addFields({
+      name: "Final Notice",
+      value: "**There are no excuses for not following these rules.** Staff may warn, mute, kick, or ban when needed.",
+      inline: false
+    })
+    .setFooter({ text: "Wealth Operators 2.0" })
+    .setTimestamp();
+
+  return embed;
+}
+
 async function postRulesMessage(channel) {
   const files = getRulesFiles();
 
@@ -468,7 +498,7 @@ async function postRulesMessage(channel) {
     await channel.send({ files });
   }
 
-  await channel.send(rulesMessage);
+  await channel.send({ embeds: [buildRulesEmbed()] });
 }
 
 function resolveBannerPath(settings = welcomeSettings) {
