@@ -94,6 +94,28 @@ const commandBuilders = [
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   new SlashCommandBuilder()
+    .setName("rules")
+    .setDescription("Post or preview the server rules message.")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("post")
+        .setDescription("Post the rules banner and rules message.")
+        .addChannelOption((option) =>
+          option
+            .setName("channel")
+            .setDescription("Where the rules message should be posted.")
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(false)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("preview")
+        .setDescription("Preview the rules message privately.")
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
     .setName("help")
     .setDescription("Show available commands.")
 ];

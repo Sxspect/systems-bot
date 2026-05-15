@@ -13,6 +13,8 @@ A small Discord bot ready to deploy on Render.
 - `/welcome set` configures automatic welcome messages.
 - `/welcome preview` previews the current welcome message.
 - `/welcome off` disables automatic welcome messages.
+- `/rules post` posts the server rules banner and rules text.
+- `/rules preview` previews the server rules privately.
 - Tracks new Discord members in a Notion database when Notion env vars are configured.
 - `/help` lists commands.
 - `/health` keeps Render health checks happy.
@@ -28,6 +30,8 @@ A small Discord bot ready to deploy on Render.
    - `WELCOME_CHANNEL_NAME`: fallback welcome channel name.
    - `WELCOME_MESSAGE`: fallback welcome message.
    - `WELCOME_BANNER_PATH`: fallback welcome banner image.
+   - `RULES_CHANNEL_NAME`: fallback rules channel name.
+   - `RULES_BANNER_PATH`: fallback rules banner image.
    - `NOTION_TOKEN`: your Notion integration secret.
    - `NOTION_MEMBERS_DATABASE_ID`: the database where joined members are tracked.
 4. Install dependencies:
@@ -82,6 +86,24 @@ Supported placeholders:
 The custom welcome settings are saved to `data/welcome-settings.json`. On Render, use a persistent disk if you need command-based welcome settings to survive redeploys. Without that, set `WELCOME_CHANNEL_NAME` and `WELCOME_MESSAGE` as Render environment variables.
 
 The default welcome message now welcomes members to Wealth Operators 2.0 and attaches `assets/welcome-banner.png`.
+
+## Rules Message
+
+The default rules message uses `assets/rules-banner.png`, copied from `C:\Users\strul\Desktop\rules.png`, and follows the style from `C:\Users\strul\Desktop\abc.png`.
+
+Post it in Discord:
+
+```text
+/rules post
+```
+
+By default it posts to `#rules`. You can choose another channel:
+
+```text
+/rules post channel:#rules
+```
+
+The bot sends the banner first, then the rules text underneath.
 
 ## Notion Member Tracking
 
@@ -140,6 +162,8 @@ After redeploy, every new Discord join creates or updates a row in that Notion d
    - `WELCOME_CHANNEL_NAME`
    - `WELCOME_MESSAGE`
    - `WELCOME_BANNER_PATH`
+   - `RULES_CHANNEL_NAME`
+   - `RULES_BANNER_PATH`
    - `NOTION_TOKEN`
    - `NOTION_MEMBERS_DATABASE_ID`
 

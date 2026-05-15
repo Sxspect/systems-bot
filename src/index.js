@@ -40,6 +40,36 @@ const defaultWelcomeSettings = {
       "------------------------------"
     ].join("\n")
 };
+const rulesChannelName = process.env.RULES_CHANNEL_NAME || "rules";
+const rulesBannerPath = process.env.RULES_BANNER_PATH || path.join(process.cwd(), "assets", "rules-banner.png");
+const rulesMessage = [
+  "> **Extra Notes**",
+  "(i) Follow Discord's TOS at all times.",
+  "(ii) Follow Discord's Guidelines.",
+  "(iii) No talks of self harm or suicide.",
+  "",
+  "> **Be Respectful**",
+  "Bullying, harassment, homophobia, racism, or any form of discrimination will not be tolerated. Keep the community friendly and inclusive for all.",
+  "",
+  "> **Do Not Spam**",
+  "Spamming is not allowed. While we allow some leniency, excessive spamming will result in a warning and potential punishment.",
+  "",
+  "> **Link Filter**",
+  "Stay within our community. Do not attempt to bypass our link or word filters or advertise other Discord servers.",
+  "",
+  "> **Exposing Information**",
+  "Do not share personal information without consent.",
+  "",
+  "> **Keep It Appropriate**",
+  "Usernames, nicknames, and profile pictures must be appropriate and non-offensive. Inappropriate content will result in a warning or ban.",
+  "",
+  "> **No Religion or Politics**",
+  "To keep the community respectful and inclusive, avoid discussions on religion or politics. These topics can be divisive and are not allowed here.",
+  "",
+  "```",
+  "There are no excuses for not following these rules.",
+  "```"
+].join("\n");
 
 if (!token) {
   throw new Error("Missing DISCORD_TOKEN environment variable.");
@@ -327,6 +357,41 @@ client.on("interactionCreate", async (interaction) => {
       }
     }
 
+    if (interaction.commandName === "rules") {
+      if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
+        await interaction.reply({ content: "You need Manage Server permission.", ephemeral: true });
+        return;
+      }
+
+      const subcommand = interaction.options.getSubcommand();
+
+      if (subcommand === "post") {
+        const channel = interaction.options.getChannel("channel") || findTextChannel(interaction.guild, rulesChannelName);
+
+        if (!channel) {
+          await interaction.reply({
+            content: `I could not find #${rulesChannelName}. Pick a channel with /rules post channel:#channel.`,
+            ephemeral: true
+          });
+          return;
+        }
+
+        await interaction.deferReply({ ephemeral: true });
+        await postRulesMessage(channel);
+        await interaction.editReply(`Rules message posted in ${channel}.`);
+        return;
+      }
+
+      if (subcommand === "preview") {
+        await interaction.reply({
+          content: rulesMessage,
+          files: getRulesFiles(),
+          ephemeral: true
+        });
+        return;
+      }
+    }
+
     if (interaction.commandName === "help") {
       await interaction.reply({
         content: [
@@ -339,6 +404,8 @@ client.on("interactionCreate", async (interaction) => {
           "`/welcome set` - Set the welcome channel and message. Requires Manage Server.",
           "`/welcome preview` - Preview the welcome message.",
           "`/welcome off` - Turn welcome messages off. Requires Manage Server.",
+          "`/rules post` - Post the server rules banner and message. Requires Manage Server.",
+          "`/rules preview` - Preview the server rules message.",
           "`/help` - Show this list."
         ].join("\n"),
         ephemeral: true
@@ -381,6 +448,27 @@ function findTextChannelMention(guild, channelName) {
   );
 
   return channel ? `${channel}` : `#${channelName}`;
+}
+
+function findTextChannel(guild, channelName) {
+  return guild.channels.cache.find((candidate) =>
+    candidate.type === ChannelType.GuildText &&
+    candidate.name.toLowerCase() === channelName.toLowerCase()
+  );
+}
+
+function getRulesFiles() {
+  return fs.existsSync(rulesBannerPath) ? [rulesBannerPath] : [];
+}
+
+async function postRulesMessage(channel) {
+  const files = getRulesFiles();
+
+  if (files.length > 0) {
+    await channel.send({ files });
+  }
+
+  await channel.send(rulesMessage);
 }
 
 function resolveBannerPath(settings = welcomeSettings) {
