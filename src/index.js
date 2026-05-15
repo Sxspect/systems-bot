@@ -1,13 +1,16 @@
 require("dotenv").config();
 
 const express = require("express");
+const fs = require("node:fs");
+const path = require("node:path");
 const {
   Client,
   EmbedBuilder,
   GatewayIntentBits,
   PermissionFlagsBits,
   REST,
-  Routes
+  Routes,
+  ChannelType
 } = require("discord.js");
 const { commands } = require("./commands");
 const { setupServerChannels } = require("./serverSetup");
@@ -16,16 +19,47 @@ const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
 const port = Number(process.env.PORT || 3000);
+const welcomeConfigPath = process.env.WELCOME_CONFIG_PATH || path.join(process.cwd(), "data", "welcome-settings.json");
+const defaultWelcomeSettings = {
+  enabled: true,
+  channelId: null,
+  channelName: process.env.WELCOME_CHANNEL_NAME || "welcome",
+  message:
+    process.env.WELCOME_MESSAGE ||
+    "Welcome to {server}, {user}! Glad to have you here. Start in #rules and introduce yourself in #introductions."
+};
 
 if (!token) {
   throw new Error("Missing DISCORD_TOKEN environment variable.");
 }
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
 const app = express();
+
+function loadWelcomeSettings() {
+  if (!fs.existsSync(welcomeConfigPath)) {
+    return { ...defaultWelcomeSettings };
+  }
+
+  try {
+    const savedSettings = JSON.parse(fs.readFileSync(welcomeConfigPath, "utf8"));
+    return { ...defaultWelcomeSettings, ...savedSettings };
+  } catch (error) {
+    console.warn("Failed to load welcome settings. Using defaults:", error);
+    return { ...defaultWelcomeSettings };
+  }
+}
+
+let welcomeSettings = loadWelcomeSettings();
+
+function saveWelcomeSettings(settings) {
+  fs.mkdirSync(path.dirname(welcomeConfigPath), { recursive: true });
+  fs.writeFileSync(welcomeConfigPath, `${JSON.stringify(settings, null, 2)}\n`);
+  welcomeSettings = settings;
+}
 
 app.get("/", (_request, response) => {
   response.json({
@@ -212,6 +246,67 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
 
+    if (interaction.commandName === "welcome") {
+      if (!interaction.memberPermissions.has(PermissionFlagsBits.ManageGuild)) {
+        await interaction.reply({ content: "You need Manage Server permission.", ephemeral: true });
+        return;
+      }
+
+      const subcommand = interaction.options.getSubcommand();
+
+      if (subcommand === "set") {
+        const channel = interaction.options.getChannel("channel", true);
+        const message = interaction.options.getString("message", true);
+        const settings = {
+          enabled: true,
+          channelId: channel.id,
+          channelName: channel.name,
+          message
+        };
+
+        saveWelcomeSettings(settings);
+
+        await interaction.reply({
+          content: [
+            `Welcome messages enabled in ${channel}.`,
+            "Preview:",
+            buildWelcomeMessage({
+              userId: interaction.user.id,
+              username: interaction.user.username,
+              guildName: interaction.guild.name
+            }, settings)
+          ].join("\n"),
+          ephemeral: true
+        });
+        return;
+      }
+
+      if (subcommand === "preview") {
+        const channel = findWelcomeChannel(interaction.guild, welcomeSettings);
+
+        await interaction.reply({
+          content: [
+            `Status: ${welcomeSettings.enabled ? "on" : "off"}`,
+            `Channel: ${channel ? `${channel}` : `#${welcomeSettings.channelName} not found`}`,
+            "Preview:",
+            buildWelcomeMessage({
+              userId: interaction.user.id,
+              username: interaction.user.username,
+              guildName: interaction.guild.name
+            })
+          ].join("\n"),
+          ephemeral: true
+        });
+        return;
+      }
+
+      if (subcommand === "off") {
+        saveWelcomeSettings({ ...welcomeSettings, enabled: false });
+        await interaction.reply({ content: "Welcome messages turned off.", ephemeral: true });
+        return;
+      }
+    }
+
     if (interaction.commandName === "help") {
       await interaction.reply({
         content: [
@@ -221,6 +316,9 @@ client.on("interactionCreate", async (interaction) => {
           "`/say` - Send a bot message. Requires Manage Messages.",
           "`/clear` - Delete recent messages. Requires Manage Messages.",
           "`/setupserver` - Create the default server channel layout. Requires Manage Server.",
+          "`/welcome set` - Set the welcome channel and message. Requires Manage Server.",
+          "`/welcome preview` - Preview the welcome message.",
+          "`/welcome off` - Turn welcome messages off. Requires Manage Server.",
           "`/help` - Show this list."
         ].join("\n"),
         ephemeral: true
@@ -239,6 +337,51 @@ client.on("interactionCreate", async (interaction) => {
     } else {
       await interaction.reply(response);
     }
+  }
+});
+
+function buildWelcomeMessage(member, settings = welcomeSettings) {
+  return settings.message
+    .replaceAll("{user}", `<@${member.userId}>`)
+    .replaceAll("{username}", member.username)
+    .replaceAll("{server}", member.guildName);
+}
+
+function findWelcomeChannel(guild, settings = welcomeSettings) {
+  if (settings.channelId) {
+    const configuredChannel = guild.channels.cache.get(settings.channelId);
+
+    if (configuredChannel?.type === ChannelType.GuildText) {
+      return configuredChannel;
+    }
+  }
+
+  return guild.channels.cache.find((channel) =>
+    channel.type === ChannelType.GuildText &&
+    channel.name.toLowerCase() === settings.channelName.toLowerCase()
+  );
+}
+
+client.on("guildMemberAdd", async (member) => {
+  try {
+    if (!welcomeSettings.enabled) {
+      return;
+    }
+
+    const channel = findWelcomeChannel(member.guild);
+
+    if (!channel) {
+      console.warn(`No #${welcomeSettings.channelName} channel found in ${member.guild.name}.`);
+      return;
+    }
+
+    await channel.send(buildWelcomeMessage({
+      userId: member.id,
+      username: member.user.username,
+      guildName: member.guild.name
+    }));
+  } catch (error) {
+    console.error(`Failed to send welcome message for ${member.user.tag}:`, error);
   }
 });
 

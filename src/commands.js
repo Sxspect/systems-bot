@@ -1,4 +1,5 @@
 const {
+  ChannelType,
   PermissionFlagsBits,
   SlashCommandBuilder
 } = require("discord.js");
@@ -55,6 +56,40 @@ const commandBuilders = [
         .setName("confirm")
         .setDescription("Set this to true to create missing categories and channels.")
         .setRequired(true)
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+
+  new SlashCommandBuilder()
+    .setName("welcome")
+    .setDescription("Configure automatic welcome messages.")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("set")
+        .setDescription("Set the welcome channel and message.")
+        .addChannelOption((option) =>
+          option
+            .setName("channel")
+            .setDescription("Where welcome messages should be sent.")
+            .addChannelTypes(ChannelType.GuildText)
+            .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName("message")
+            .setDescription("Use {user}, {username}, and {server} as placeholders.")
+            .setMaxLength(1800)
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("preview")
+        .setDescription("Preview the current welcome message.")
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("off")
+        .setDescription("Turn automatic welcome messages off.")
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
