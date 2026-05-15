@@ -26,6 +26,7 @@ A small Discord bot ready to deploy on Render.
    - `GUILD_ID`: your Discord server ID.
    - `WELCOME_CHANNEL_NAME`: fallback welcome channel name.
    - `WELCOME_MESSAGE`: fallback welcome message.
+   - `WELCOME_BANNER_PATH`: fallback welcome banner image.
 4. Install dependencies:
 
 ```bash
@@ -77,6 +78,8 @@ Supported placeholders:
 
 The custom welcome settings are saved to `data/welcome-settings.json`. On Render, use a persistent disk if you need command-based welcome settings to survive redeploys. Without that, set `WELCOME_CHANNEL_NAME` and `WELCOME_MESSAGE` as Render environment variables.
 
+The default welcome message now welcomes members to Wealth Operators 2.0 and attaches `assets/welcome-banner.png`.
+
 ## Render Deployment
 
 1. Push this repo to GitHub.
@@ -91,5 +94,6 @@ The custom welcome settings are saved to `data/welcome-settings.json`. On Render
    - `GUILD_ID`
    - `WELCOME_CHANNEL_NAME`
    - `WELCOME_MESSAGE`
+   - `WELCOME_BANNER_PATH`
 
 Do not commit your real token. Keep it only in `.env` locally or Render environment variables.

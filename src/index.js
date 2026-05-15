@@ -24,9 +24,20 @@ const defaultWelcomeSettings = {
   enabled: true,
   channelId: null,
   channelName: process.env.WELCOME_CHANNEL_NAME || "welcome",
+  bannerPath: process.env.WELCOME_BANNER_PATH || path.join(process.cwd(), "assets", "welcome-banner.png"),
   message:
     process.env.WELCOME_MESSAGE ||
-    "Welcome to {server}, {user}! Glad to have you here. Start in #rules and introduce yourself in #introductions."
+    [
+      "Greetings {user}!",
+      "",
+      "------------------------------",
+      "**Welcome to Wealth Operators 2.0**",
+      "Your presence is a valuable addition. **Welcome!**",
+      "------------------------------",
+      "> Make sure to read our rules here {rules}",
+      "> Stay updated with {announcements}",
+      "------------------------------"
+    ].join("\n")
 };
 
 if (!token) {
@@ -273,7 +284,8 @@ client.on("interactionCreate", async (interaction) => {
             buildWelcomeMessage({
               userId: interaction.user.id,
               username: interaction.user.username,
-              guildName: interaction.guild.name
+              guildName: interaction.guild.name,
+              guild: interaction.guild
             }, settings)
           ].join("\n"),
           ephemeral: true
@@ -285,6 +297,12 @@ client.on("interactionCreate", async (interaction) => {
         const channel = findWelcomeChannel(interaction.guild, welcomeSettings);
 
         await interaction.reply({
+          ...buildWelcomePayload({
+            userId: interaction.user.id,
+            username: interaction.user.username,
+            guildName: interaction.guild.name,
+            guild: interaction.guild
+          }),
           content: [
             `Status: ${welcomeSettings.enabled ? "on" : "off"}`,
             `Channel: ${channel ? `${channel}` : `#${welcomeSettings.channelName} not found`}`,
@@ -292,7 +310,8 @@ client.on("interactionCreate", async (interaction) => {
             buildWelcomeMessage({
               userId: interaction.user.id,
               username: interaction.user.username,
-              guildName: interaction.guild.name
+              guildName: interaction.guild.name,
+              guild: interaction.guild
             })
           ].join("\n"),
           ephemeral: true
@@ -344,7 +363,46 @@ function buildWelcomeMessage(member, settings = welcomeSettings) {
   return settings.message
     .replaceAll("{user}", `<@${member.userId}>`)
     .replaceAll("{username}", member.username)
-    .replaceAll("{server}", member.guildName);
+    .replaceAll("{server}", member.guildName)
+    .replaceAll("{rules}", findTextChannelMention(member.guild, "rules"))
+    .replaceAll("{announcements}", findTextChannelMention(member.guild, "announcements"))
+    .replaceAll("{introductions}", findTextChannelMention(member.guild, "introductions"));
+}
+
+function findTextChannelMention(guild, channelName) {
+  if (!guild) {
+    return `#${channelName}`;
+  }
+
+  const channel = guild.channels.cache.find((candidate) =>
+    candidate.type === ChannelType.GuildText &&
+    candidate.name.toLowerCase() === channelName.toLowerCase()
+  );
+
+  return channel ? `${channel}` : `#${channelName}`;
+}
+
+function resolveBannerPath(settings = welcomeSettings) {
+  const bannerPath = settings.bannerPath || defaultWelcomeSettings.bannerPath;
+
+  if (!bannerPath) {
+    return null;
+  }
+
+  return path.isAbsolute(bannerPath) ? bannerPath : path.join(process.cwd(), bannerPath);
+}
+
+function buildWelcomePayload(member, settings = welcomeSettings) {
+  const payload = {
+    content: buildWelcomeMessage(member, settings)
+  };
+  const bannerPath = resolveBannerPath(settings);
+
+  if (bannerPath && fs.existsSync(bannerPath)) {
+    payload.files = [bannerPath];
+  }
+
+  return payload;
 }
 
 function findWelcomeChannel(guild, settings = welcomeSettings) {
@@ -375,10 +433,11 @@ client.on("guildMemberAdd", async (member) => {
       return;
     }
 
-    await channel.send(buildWelcomeMessage({
+    await channel.send(buildWelcomePayload({
       userId: member.id,
       username: member.user.username,
-      guildName: member.guild.name
+      guildName: member.guild.name,
+      guild: member.guild
     }));
   } catch (error) {
     console.error(`Failed to send welcome message for ${member.user.tag}:`, error);
